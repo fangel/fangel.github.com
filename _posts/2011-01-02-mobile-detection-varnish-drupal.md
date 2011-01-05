@@ -1,0 +1,175 @@
+---
+layout: post
+title: Mobile Detection with Varnish and Drupal
+abstract: |
+  An outline on how to get Varnish to detect if the user is using a mobile 
+  device to access your site and how to have a cache group for each device 
+  type. I will also talk about how you can then get Drupal to serve your 
+  site with a mobile friendly theme when Varnish detected a mobile device.
+authors:
+ - <a href="http://sevengoslings.net">Morten Fangel</a>
+---
+
+# 1 Motivation: Different Site for Different Devices
+
+As more and more people starts using smart phones and tables for their 
+browsing needs, it becomes apparent that only having a lightweight mobile
+version that doesn't have all content and functionality wont cut it. So
+the obvious solution is then to just have a different templates for each 
+group of devices you want to cater to. This way all devices can see the 
+same information and have the same functionality while you are able to
+remove i.e. unwanted blocks from the smaller devices.  
+Traditionally this has been accomplished by having the web application
+look at the User Agent either via a home-brew set of regular-expressions
+or by using a library such as [WURFL][wurfl].  
+The drawback to this approach if this is that caching using a reverse-proxy 
+such as [Varnish][varnish] impossible because you are now serving different 
+markup for the same page. To solve this problem, this paper proposes a 
+solution that moves the device detection to the proxy which can then have 
+multiple cache groups for the same page, which solves the caching problem. 
+When your reverse-proxy queries the backend for a page, it informs which 
+device-group it requests the page for.
+
+# 2 Introduction to Device Detection
+
+It is by no means the primary object of this article to describe how a
+thorough and robust device detection can be accomplished as this can be
+found in other and better articles.  
+Device detection is usually accomplished by looking at the User Agent string
+that the user sent along with his request. These have no consistent structure 
+or in fact any sort of standard definition; User Agent strings are like the
+wild west. Despite this, the popular option when it comes to device detection
+is still to invent your own set of matching rules. Creating your own matching
+rules are fairly prone to giving false positives and not being up to date when
+new devices come along.  
+A few standard libraries and products have sprung up, that contains a large 
+collection of User Agent strings and information of the device that uses that 
+particular User Agent string. I've already mentioned [WURFL][wurfl] which is a 
+open source project that aims to provide such a database; a commercial 
+alternative is [DeviceAtlas][deviceatlas].
+
+A alternative to matching on the User Agent string – or more realistically: an 
+additional heurestic – is to check if the device specifies a 
+[User Agent Profile][uaprof] (or UAProf). This is usually indicated by the 
+`X-WAP-Device` header, that links to a XML-document containing the profile. 
+Especially if you are creating your own matching rules this added information
+might be useful, as it can tell you details about the device such as screen
+resolution etc.
+
+# 3 Device Detection in Varnish
+
+Varnish is configured using the domain specific language [VCL][vcl], which is
+fairly basic but does allow for inlining of C code. I haven't been able to 
+find a device detection library that has a C-interface – DeviceAtlas has one
+for C++ though – so I've chosen to implement a basic device detection through
+a small set of regular expressions. My solution is actually just a refinement 
+of existing work done by Audun Ytterdal, which can be 
+[at the Varnish mailing list][ytterdal-link].  
+As previously mentioned, creating your own matching isn't optimal from a 
+maintainability nor from a accuracy viewpoint, but it will have to do. If I
+were to improve on the solution it would be to move over to using an 
+established library for device detection instead of custom matching rules.
+
+I've chosen to sort my devices into 4 different groups:
+
+* PCs
+* Smartphones (i.e. phones with a touch interface)
+* Tables
+* Other mobile devices
+
+In my opinion I would rather risk not detecting a mobile device, than falsely
+classify a computer as a mobile device. Because of this, I have chosen a 
+default classification of PC, and then only when certain that I'm dealing with
+a device from one of the other groups, change my guess.  
+To implement this in VCL, subroutine called `identify_device` is created,
+which will add a made-up header called `X-Device` to the request. This header 
+is used to track what device it detected, but also serves as our way of
+informing the backend-server of which device was detected. 
+
+{% highlight bash %}
+# Rutine to try and identify device
+sub identify_device { 
+  # Default to thinking it's a PC
+  set req.http.X-Device = "pc"; 
+
+  if (req.http.User-Agent ~ "iPad" ) {
+    # It says its a iPad - so let's give them the tablet-site
+    set req.http.X-Device = "mobile-tablet";
+  }
+
+  elsif (req.http.User-Agent ~ "iP(hone|od)" || req.http.User-Agent ~ "Android" ) { 
+    # It says its a iPhone, iPod or Android - so let's give them the touch-site..
+    set req.http.X-Device = "mobile-smart"; 
+  }
+
+  elsif (req.http.User-Agent ~ "SymbianOS" || req.http.User-Agent ~ "^BlackBerry" || req.http.User-Agent ~ "^SonyEricsson" || req.http.User-Agent ~ "^Nokia" || req.http.User-Agent ~ "^SAMSUNG" || req.http.User-Agent ~ "^LG") { 
+    # Some other sort of mobile
+    set req.http.X-Device = "mobile-other"; 
+  }  
+}
+{% endhighlight %}
+
+This subroutine needs to be called in the `recv` routine in your VCL-file, 
+which could look something like this
+
+{% highlight bash %}
+sub vcl_recv {
+  # First call our identify_device subroutine to detect the device
+  call identify_device;	
+
+  # Your existing recv-routine here
+}
+{% endhighlight %}
+
+Now Varnish can detect our device for us, and inform the back-end of what type
+of device it wants the page generated for. We haven't, however, solved the
+main problem: That all devices shares a common cache in Varnish, and hence
+will serve all requests but the first as if it was meant for whatever device
+first visited this page.  
+The way Varnish handles cache-groups is by storing the cache by a hash value
+computed by the `hash` routine. So if we add something to the this routine 
+that differentiates the different devices, we will effectively have created 
+different caches for each device.
+
+{% highlight bash %}
+sub vcl_hash { 
+  # Your existing hash-routine here..
+
+  # And then add the device to the hash (if its a mobile device)
+  if (req.http.X-Device ~ "^mobile") {
+    set req.hash += req.http.X-Device; 
+  }
+}
+{% endhighlight %}
+
+Great! Now we've created all the configuration we need for Varnish; It detects
+the device, informs the backend and stores the cache for each device type
+independently from the other.  
+However, I wasn't impressed in how messy my solution looked, especially when I
+had a large existing `recv` and `hash` routines. So I set about moving all the
+device-detection and hash-addition to a seperate file. The reason why you're 
+able to do this, is because of the way Varnish handles multiple definitions of
+the same routine. If the first definition of the routine doesn't return 
+anything, the next definition is called, etc. So I created a file consisting
+of the bare minimum, and made sure that my `recv` and `hash` routines didn't
+return anything.
+
+The result was the file [`device-detect.vcl`][device-detect.vcl], which you 
+can just include in the top of your existing Varnish configuration file like 
+this: 
+
+{% highlight bash %}
+include "/path/to/device-detect.vcl";.
+{% endhighlight %}
+
+# 4 Theme Switching in Drupal
+
+LALAL..
+
+[wurfl]: http://wurfl.sourceforge.net/ "Wireless Universal Resource File"
+[varnish]: http://www.varnish-cache.org/ "Varnish Cache"
+[deviceatlas]: http://deviceatlas.com/ "DeviceAtlas"
+[uaprof]: http://www.openmobilealliance.org/tech/affiliates/wap/wap-248-uaprof-20011020-a.pdf "User Agent Profile specification"
+[vcl]: http://www.varnish-cache.org/trac/wiki/VCL "Varnish Documentation on VCL"
+[ytterdal-link]: http://www.varnish-cache.org/lists/pipermail/varnish-misc/2010-April/004103.html "Audun Ytterdal initial solution"
+[device-detect.vcl]: /code/device-detect.vcl "Download device-detect.vcl"
