@@ -7,7 +7,8 @@ layout: default
 	<header id="byline">
 		<h1> {{ page.title }} </h1>
 		
-		{% case page.date | date: "%e" %}
+		{% capture day %}{{ page.date | date: "%e" }}{%endcapture %}
+		{% case day %}
 			{% when ' 1' %}{% assign format = "%B %est, %Y" %}
 			{% when ' 2' %}{% assign format = "%B %end, %Y" %}
 			{% else %}{% assign format = "%B %eth, %Y" %}
