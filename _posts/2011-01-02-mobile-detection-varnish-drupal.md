@@ -10,7 +10,7 @@ authors:
  - <a href="http://sevengoslings.net">Morten Fangel</a>
 ---
 
-# 1 Motivation: Different Site for Different Devices
+# 1 Motivation: Different Sites for Different Devices
 
 As more and more people starts using smart phones and tables for their 
 browsing needs, it becomes apparent that only having a lightweight mobile
@@ -28,7 +28,9 @@ markup for the same page. To solve this problem, this paper proposes a
 solution that moves the device detection to the proxy which can then have 
 multiple cache groups for the same page, which solves the caching problem. 
 When your reverse-proxy queries the backend for a page, it informs which 
-device-group it requests the page for.
+device-group it requests the page for. Thus you are currently limited to
+choosing one of two: High-performance or pages catered to the users choice of
+device.
 
 # 2 Introduction to Device Detection
 
@@ -63,7 +65,7 @@ fairly basic but does allow for inlining of C code. I haven't been able to
 find a device detection library that has a C-interface – DeviceAtlas has one
 for C++ though – so I've chosen to implement a basic device detection through
 a small set of regular expressions. My solution is actually just a refinement 
-of existing work done by Audun Ytterdal, which can be 
+of existing work done by [Audun Ytterdal][ytterdal], which can be 
 [at the Varnish mailing list][ytterdal-link].  
 As previously mentioned, creating your own matching isn't optimal from a 
 maintainability nor from a accuracy viewpoint, but it will have to do. If I
@@ -164,12 +166,129 @@ include "/path/to/device-detect.vcl";.
 
 # 4 Theme Switching in Drupal
 
-LALAL..
+To let the webserver serve a different appearing website to different devices,
+we need some sort of functionality to let our webapplication change it's
+appearance.  
+In the article I'll describe how to do it in [Drupal 7][drupal], the latest
+version of a popular open source PHP CMS. I've chosen to do so in the most
+lightweight way I could. Another alternative could be to create a module
+that interfaces with the [Mobile Tools][mobile-tools] plugin. 
+
+In Drupal 7, there is a simple hook your module can implement called
+[`hook_custom_theme`][hook_custom_theme], which allows you to override the
+theme for the current page view.  
+Basically you can create a module which implements this hook and depending
+on what value it receives in the `X-Device` header, change the theme.
+
+{% highlight php %}
+<?php
+function mymodule_custom_theme() {
+  if (isset($_SERVER['HTTP_X_DEVICE'])) {
+    switch ($_SERVER['HTTP_X_DEVICE']) {
+      case 'mobile-tablet':
+        // Show the tablet-theme
+        return 'my-tablet-theme';
+
+      case 'mobile-smart':
+        // Show the smartphone-theme
+        return 'my-smartphone-theme';
+
+      case 'mobile-other':
+        // Show our theme for other mobile devices
+        return 'my-mobile-theme';
+    }
+  }
+}
+?>
+{% endhighlight %}
+
+Of course you can extend this to allow you to configure the themes in your 
+`settings.php` file if you want.  
+You could create your hook like this:
+
+{% highlight php %}
+<?php
+function mymobile_custom_theme() {
+  if (isset($_SERVER['HTTP_X_DEVICE'])
+   && strstr($_SERVER['HTTP_X_DEVICE'], 'mobile')) {
+    // We're dealing with a mobile device..
+
+    // Remove "mobile_" from the device-string
+    $group = substr($_SERVER['HTTP_X_DEVICE'], 7));
+
+    // Look up the configuration variable..
+    return variable_get('mobile_theme_' . $group, NULL);
+  }
+}
+?>
+{% endhighlight %}
+
+This allows you to add the following to your settings.php
+
+{% highlight php %}
+<?php
+$conf['mobile_theme_tablet'] = 'my-tablet-theme';
+$conf['mobile_theme_smart']  = 'my-smartphone-theme';
+$conf['mobile_theme_other']  = 'my-mobile-theme';
+?>
+{% endhighlight %}
+
+This will allow you to switch the appearance of your site depending on what
+device Varnish detected. 
+
+So now we have a Drupal site that is cached by Varnish with different themes
+for different devices types. We've gotten the solution we wanted.
+
+# 5 Further Work
+
+As I see it, the solution I've outline in this article has two shortcomings:
+
+1. It uses a custom set of matching rules.  
+I would really like it if an already established library for device detection
+could be used instead of a set of regular expressions, such as only grouping
+known devices into the groups you want, needs to be preformed in Varnish. I
+haven't, however, been able to find any device detection library with a C
+library that I could try and inline in the VCL configuration.
+
+2. It doesn't incorporate with the [Mobile Tools][mobile-tools] plugin for
+Drupal 7.  
+If a module was created where Varnish could serve as a device detection 
+method and the various groups could lead to different configurable themes
+it would be a much better user experience for anyone using this solution to
+device detection.
+
+These two things together would form a great contribution to the Drupal high 
+performance eco-system. 
+
+# 6 Conclusion 
+
+It's fairly well known that if you need to run a site with large amounts of 
+traffic on Drupal, you need some sort of reverse-proxy caching. Varnish is 
+perfect for this job, and modules already exists for Drupal that ties cache 
+flushing in Drupal with purging in Varnish etc. In the future, it's likely 
+we'll see more and more sites who wants to cater to their mobile clients with 
+full, albeit different appearing, access to their normal site. These are 
+currently conflicting goals, as the current technologies for changing the 
+appearance of your Drupal site works by detecting the device on the 
+application server. Any reverse-proxy will then incorrectly group the 
+different versions of the same page as one leading to serving a possibly 
+incorrect looking page to future visitors.
+
+The solution outlined in this article, especially if made in to a proper 
+module with a decent user-experience, is a great way to achieve both these 
+goals. You are able to use Varnish to cache your site while still maintaining 
+the ability to serve different sites to different devices. Thus we have 
+achieved our goal: High-performance coupled with pages catered to the users 
+device.
 
 [wurfl]: http://wurfl.sourceforge.net/ "Wireless Universal Resource File"
 [varnish]: http://www.varnish-cache.org/ "Varnish Cache"
 [deviceatlas]: http://deviceatlas.com/ "DeviceAtlas"
 [uaprof]: http://www.openmobilealliance.org/tech/affiliates/wap/wap-248-uaprof-20011020-a.pdf "User Agent Profile specification"
 [vcl]: http://www.varnish-cache.org/trac/wiki/VCL "Varnish Documentation on VCL"
+[ytterdal]: http://audun.ytterdal.net/ "Audun Ytterdal"
 [ytterdal-link]: http://www.varnish-cache.org/lists/pipermail/varnish-misc/2010-April/004103.html "Audun Ytterdal initial solution"
 [device-detect.vcl]: /code/device-detect.vcl "Download device-detect.vcl"
+[drupal]: http://drupal.org "Drupal"
+[mobile-tools]: http://drupal.org/project/mobile_tools "Mobile Tools Project Page on Drupal.org"
+[hook_custom_theme]: http://api.drupal.org/api/drupal/modules--system--system.api.php/function/hook_custom_theme/7 "Drupal Documentation on hook_custom_theme"
