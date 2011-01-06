@@ -10,7 +10,7 @@ authors:
  - <a href="http://sevengoslings.net">Morten Fangel</a>
 ---
 
-# 1 Motivation: Different Sites for Different Devices
+# Motivation: Different Sites for Different Devices
 
 As more and more people starts using smart phones and tables for their 
 browsing needs, it becomes apparent that only having a lightweight mobile
@@ -32,7 +32,7 @@ device-group it requests the page for. Thus you are currently limited to
 choosing one of two: High-performance or pages catered to the users choice of
 device.
 
-# 2 Introduction to Device Detection
+# Introduction to Device Detection
 
 It is by no means the primary object of this article to describe how a
 thorough and robust device detection can be accomplished as this can be
@@ -58,7 +58,7 @@ Especially if you are creating your own matching rules this added information
 might be useful, as it can tell you details about the device such as screen
 resolution etc.
 
-# 3 Device Detection in Varnish
+# Device Detection in Varnish
 
 Varnish is configured using the domain specific language [VCL][vcl], which is
 fairly basic but does allow for inlining of C code. I haven't been able to 
@@ -164,7 +164,7 @@ this:
 include "/path/to/device-detect.vcl";.
 {% endhighlight %}
 
-# 4 Theme Switching in Drupal
+# Theme Switching in Drupal
 
 To let the webserver serve a different appearing website to different devices,
 we need some sort of functionality to let our webapplication change it's
@@ -239,7 +239,7 @@ device Varnish detected.
 So now we have a Drupal site that is cached by Varnish with different themes
 for different devices types. We've gotten the solution we wanted.
 
-# 5 Further Work
+# Further Work
 
 As I see it, the solution I've outline in this article has two shortcomings:
 
@@ -261,7 +261,7 @@ device detection.
 These two things together would form a great contribution to the Drupal high 
 performance eco-system. 
 
-# 6 Conclusion 
+# Conclusion 
 
 It's fairly well known that if you need to run a site with large amounts of 
 traffic on Drupal, you need some sort of reverse-proxy caching. Varnish is 

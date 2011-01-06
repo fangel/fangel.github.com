@@ -33,11 +33,9 @@ article {
 		margin-top: 1.5em; }
 
 		article section.body h1 {
+			list-style-type: decimal;
+			display: list-item;
 			font-size: 24px; }
-			
-			article section.body h1:first-letter {
-				font-size: 30px; 
-				letter-spacing: 10px; }
 
 		article section.body h2 {
 			font-size: 21px; }
