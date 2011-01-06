@@ -243,15 +243,16 @@ for different devices types. We've gotten the solution we wanted.
 
 As I see it, the solution I've outline in this article has two shortcomings:
 
-1. It uses a custom set of matching rules.  
-I would really like it if an already established library for device detection
-could be used instead of a set of regular expressions, such as only grouping
-known devices into the groups you want, needs to be preformed in Varnish. I
-haven't, however, been able to find any device detection library with a C
-library that I could try and inline in the VCL configuration.
+1. My solution uses a custom set of matching rules instead of a established
+library.  
+I would really like it if a library for device detection could be used 
+instead of a set of regular expressions, such that only grouping known 
+devices into the groups you want, needs to be preformed in Varnish. I 
+haven't, however, been able to find any device detection library with a C 
+interface that I could try and inline in the VCL configuration.
 
 2. It doesn't incorporate with the [Mobile Tools][mobile-tools] plugin for
-Drupal 7.  
+Drupal 7 like it should.  
 If a module was created where Varnish could serve as a device detection 
 method and the various groups could lead to different configurable themes
 it would be a much better user experience for anyone using this solution to
