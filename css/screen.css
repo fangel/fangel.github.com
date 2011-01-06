@@ -59,7 +59,10 @@ article {
 			word-spacing: 2px;
 			line-height: 20px; }
 
-		article section.body ul, article section.body ol {
+		article section.body ul {
 			padding: 0; 
 			margin: -0.8em 0 1em 0; }
+			
+		article section.body ol {
+			padding: 0; }
 		
