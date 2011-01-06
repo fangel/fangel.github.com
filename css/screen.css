@@ -2,7 +2,7 @@ body {
 	font-family: "Hoefler Text", 'Palatino Linotype', 'Times New Roman', serif;
 	font-size: 18px; }
 
-h1 {
+h1, h2 {
 	font-weight: 200; }
 
 article {
@@ -21,7 +21,7 @@ article {
 		margin-top: 0;
 		text-align: center; }
 
-		article section.byline time, article section.byline address {
+	article time, article address {
 			display: inline; 
 			font-style: normal; }
 		
@@ -63,4 +63,49 @@ article {
 			
 		article section.body ol {
 			padding: 0; }
+
+article.listing {
+	}
+	
+	article.listing h2 {
+		margin-bottom: 0; }
+
+	article.listing header div {
+		text-align: center;
+		font-style: italic; 
+		margin-bottom: 0.25em; }	
+	
+	article.listing header address a {
+		color: black; }
+	
+	article.listing ul {
+		margin-top: 0.25em;
+		padding: 0; }
 		
+		article.listing ul li {
+			list-style-type: none; 
+			margin-bottom: 1.5em; }
+	
+	article.listing article {
+		margin: 0; }
+		
+		article.listing article a {
+			color: black;
+			text-decoration: none; }
+		
+		article.listing article h1 {
+			margin-top: 0;
+			font-size: 21px; 
+			text-decoration: underline; }
+			
+		article.listing article section.byline {
+			margin-top: -0.75em;
+			color: #444; }
+		
+		article.listing article section.abstract {
+			text-align: justify;
+		}
+			
+		article.listing article aside {
+			margin-top: 0.1em;
+			font-style: italic; }

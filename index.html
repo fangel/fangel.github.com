@@ -1,11 +1,60 @@
 ---
 layout: default
-title: Morten Fangels Essays
+title: Technical Essays by Morten Fangels
+author: <a href="http://sevengoslings.net">Morten Fangel</a>
 ---
 
-BUH
-<ul class="posts">
-	{% for post in site.posts %}
-		<li><span>{{ post.date | date_to_string }}</span> &raquo; <a href="{{ post.url }}">{{ post.title }}</a> <br />{{ post.abstract }}</li>
-	{% endfor %}
-</ul>
+<article class="listing">
+	<header>
+		<div>Welcome to the home of the</div>
+		<h1>Technical Essays of <address>{{ page.author }}</address></h1>
+	</header>
+	
+	<section>
+		<p>
+			This is collection of essays written by me, Morten Fangel. My hope
+			is that these essays inspire you to create a better solution than
+			the one I outline. I've tried to keep examples small and generic 
+			enough to allow for easy extension of the solutions described in my
+			essays.
+		</p>
+		<p>
+			If you want to know more about me personally or if you want to know 
+			how	to contact me, you should check out my personal site:
+			<a href="http://sevengoslings.net">sevengoslings.net</a>
+		</p>
+	</section>
+	
+	<h2>The essays:</h2>
+	<ul class="posts">
+		{% for post in site.posts %}
+			<li>
+				<article>
+					<a href="{{ post.url }}">
+						<h1>{{ post.title }}</h1>
+						<section class="byline">
+							{% capture day %}{{ post.date | date: "%e" }}{%endcapture %}
+							{% case day %}
+								{% when ' 1' %}{% assign format = "%B %est, %Y" %}
+								{% when ' 2' %}{% assign format = "%B %end, %Y" %}
+								{% when '21' %}{% assign format = "%B %est, %Y" %}
+								{% when '22' %}{% assign format = "%B %end, %Y" %}
+								{% when '31' %}{% assign format = "%B %est, %Y" %}
+								{% else %}{% assign format = "%B %eth, %Y" %}
+							{% endcase %}
+							Published on 
+							<time datetime="{{ post.date | date: "%Y-%m-%d" }}">
+								{{ post.date | date: format }}</time>.
+						</section>
+						<section class="abstract">
+							{{ post.abstract }}
+						</section>
+						<aside>
+							.. click to continue reading this essay.
+						</aside>
+					</a>
+				</article>
+			</li>
+		{% endfor %}
+	</ul>
+</article>
