@@ -11,6 +11,9 @@ layout: default
 		{% case day %}
 			{% when ' 1' %}{% assign format = "%B %est, %Y" %}
 			{% when ' 2' %}{% assign format = "%B %end, %Y" %}
+			{% when '21' %}{% assign format = "%B %est, %Y" %}
+			{% when '22' %}{% assign format = "%B %end, %Y" %}
+			{% when '31' %}{% assign format = "%B %est, %Y" %}
 			{% else %}{% assign format = "%B %eth, %Y" %}
 		{% endcase %}
 		
