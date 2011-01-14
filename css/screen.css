@@ -5,6 +5,9 @@ body {
 h1, h2 {
 	font-weight: 200; }
 
+article, section {
+	display: block; /* Hi firefox! */ }
+
 article {
 	width: 600px;
 	margin: 25px 75px; }
