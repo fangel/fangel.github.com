@@ -12,7 +12,7 @@ authors:
 
 # Motivation: Different Sites for Different Devices
 
-As more and more people starts using smart phones and tables for their 
+As more and more people starts using smart phones and tablets for their 
 browsing needs, it becomes apparent that only having a lightweight mobile
 version that doesn't have all content and functionality wont cut it. So
 the obvious solution is then to just have a different templates for each 
@@ -51,7 +51,7 @@ open source project that aims to provide such a database; a commercial
 alternative is [DeviceAtlas][deviceatlas].
 
 A alternative to matching on the User Agent string – or more realistically: an 
-additional heurestic – is to check if the device specifies a 
+additional heuristic – is to check if the device specifies a 
 [User Agent Profile][uaprof] (or UAProf). This is usually indicated by the 
 `X-WAP-Device` header, that links to a XML-document containing the profile. 
 Especially if you are creating your own matching rules this added information
@@ -76,7 +76,7 @@ I've chosen to sort my devices into 4 different groups:
 
 * PCs
 * Smartphones (i.e. phones with a touch interface)
-* Tables
+* Tablets
 * Other mobile devices
 
 In my opinion I would rather risk not detecting a mobile device, than falsely
