@@ -10,6 +10,9 @@ authors:
  - <a href="http://sevengoslings.net">Morten Fangel</a>
 ---
 
+**Update** As per May 1<sup>st</sup>, I've added [Appendix A][appendix-a], to 
+discuss a recent blog post that uses WURFL and VCL to detect mobiles.
+
 # Motivation: Different Sites for Different Devices
 
 As more and more people starts using smart phones and tablets for their 
@@ -249,7 +252,9 @@ I would really like it if a library for device detection could be used
 instead of a set of regular expressions, such that only grouping known 
 devices into the groups you want, needs to be preformed in Varnish. I 
 haven't, however, been able to find any device detection library with a C 
-interface that I could try and inline in the VCL configuration.
+interface that I could try and inline in the VCL configuration.  
+**Update** See [Appendix A][appendix-a] for a discussion on a blog post that 
+proposes just this.
 
 2. It doesn't incorporate with the [Mobile Tools][mobile-tools] plugin for
 Drupal 7 like it should.  
@@ -282,6 +287,32 @@ the ability to serve different sites to different devices. Thus we have
 achieved our goal: High-performance coupled with pages catered to the users 
 device.
 
+# Appendix A: Varnish and WURFL.
+
+[Dave Hall][davehall-twitter] recently pointed me in the direction of a
+Feb. 2011 blog post titled 
+[*Mobile Device Detection with WURFL and Varnish*][enrise-blog-post] by
+[Enrise][enrise]. It outlines a solution where they load the WURFL XML file
+into memory and queries it with xPath. They rely on the assumption that if
+the User-Agent is listed in WURFL it's a mobile device. This is a reasonably
+assumption, but I would like to have seen WURFL put to a better use than a
+simple hit-or-miss check.  
+Specifically I miss the possibility of detection different groupings of devices,
+namely tablets and smartphones. A tablet and a smartphone has radically 
+different screen solutions and in my mind therefore shouldn't be using the same
+layout. So if the WURFL solution should be any good it shouldn't just check for
+an existing User-Agent in the WURFL file, it should use the attributes 
+associated with each device and then return the type of device.
+
+Also, according to the comments on the post, a better way of loading shared
+libraries into Varnish than what the author uses exists. So if a improved 
+version should be created the loading mechanism should also be updated.
+
+Despite these shortcomings I see the post as a very promising start to what
+could become a great Varnish plugin. My own C skills are minimal, so I wouldn't
+attempt to take on the task but if anyone is, I would support it in any way I
+could.
+
 [wurfl]: http://wurfl.sourceforge.net/ "Wireless Universal Resource File"
 [varnish]: http://www.varnish-cache.org/ "Varnish Cache"
 [deviceatlas]: http://deviceatlas.com/ "DeviceAtlas"
@@ -293,3 +324,7 @@ device.
 [drupal]: http://drupal.org "Drupal"
 [mobile-tools]: http://drupal.org/project/mobile_tools "Mobile Tools Project Page on Drupal.org"
 [hook_custom_theme]: http://api.drupal.org/api/drupal/modules--system--system.api.php/function/hook_custom_theme/7 "Drupal Documentation on hook_custom_theme"
+[appendix-a]: #appendix_a_varnish_and_wurfl "Appendix A: Varnish and WURFL"
+[davehall-twitter]: http://twitter.com/skwashd "Dave Halls Twitter profile"
+[enrise-blog-post]: http://www.enrise.com/2011/02/mobile-device-detection-with-wurfl-and-varnish/ "Mobile Device Detection with WURFL and Varnish – Enrise"
+[enrise]: http://www.enrise.com/ "Enrise"
