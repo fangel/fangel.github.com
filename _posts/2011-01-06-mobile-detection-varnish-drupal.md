@@ -305,7 +305,7 @@ an existing User-Agent in the WURFL file, it should use the attributes
 associated with each device and then return the type of device.
 
 Also, according to the comments on the post, a better way of loading shared
-libraries into Varnish than what the author uses exists. So if a improved 
+libraries into Varnish than what the author uses exists. So if an improved 
 version should be created the loading mechanism should also be updated.
 
 Despite these shortcomings I see the post as a very promising start to what
