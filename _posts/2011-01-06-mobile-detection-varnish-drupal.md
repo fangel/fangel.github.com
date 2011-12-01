@@ -68,7 +68,7 @@ fairly basic but does allow for inlining of C code. I haven't been able to
 find a device detection library that has a C-interface – DeviceAtlas has one
 for C++ though – so I've chosen to implement a basic device detection through
 a small set of regular expressions. My solution is actually just a refinement 
-of existing work done by [Audun Ytterdal][ytterdal], which can be 
+of existing work done by [Audun Ytterdal][ytterdal], which can be found 
 [at the Varnish mailing list][ytterdal-link].  
 As previously mentioned, creating your own matching isn't optimal from a 
 maintainability nor from a accuracy viewpoint, but it will have to do. If I
