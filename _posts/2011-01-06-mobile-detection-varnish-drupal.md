@@ -13,6 +13,9 @@ authors:
 **Update** As per May 1<sup>st</sup>, I've added [Appendix A][appendix-a], to 
 discuss a recent blog post that uses WURFL and VCL to detect mobiles.
 
+**Update** As per Oct 21<sup>st</sup>, I've added [Appendix B][appendix-b], to
+discuss the new commercial Varnish WURFL plugin by [ScientiaMobile][scientiamobile].
+
 # Motivation: Different Sites for Different Devices
 
 As more and more people starts using smart phones and tablets for their 
@@ -70,6 +73,8 @@ for C++ though – so I've chosen to implement a basic device detection through
 a small set of regular expressions. My solution is actually just a refinement 
 of existing work done by [Audun Ytterdal][ytterdal], which can be found 
 [at the Varnish mailing list][ytterdal-link].  
+**Update** per Oct 21<sup>st</sup>: *[ScientiaMobile][scientiamobile] has released a commercial Varnish
+plugin. Please see [Appendix B][appendix-b] for a discussion on it.*  
 As previously mentioned, creating your own matching isn't optimal from a 
 maintainability nor from a accuracy viewpoint, but it will have to do. If I
 were to improve on the solution it would be to move over to using an 
@@ -313,6 +318,47 @@ could become a great Varnish plugin. My own C skills are minimal, so I wouldn't
 attempt to take on the task but if anyone is, I would support it in any way I
 could.
 
+# Appendix B: Varnish and WURFL Done Right.
+
+[Luca Passani][luca-passani-wikipedia], the creator of WURFL, from 
+[ScientiaMobile][scientiamobile] contacted me about the availability of a 
+WURFL Module for Varnish. ScientiaMobile have created plugins for 
+Varnish, Apache and Nginx that allows you to write configurations that leverages 
+the device information contained in WURFL. Their product is, as I'm writing 
+this, still in beta but should be released very soon. Passanis blog post titled
+[*HTTP and Mobile: The Missing Header*][scientiamobile-blog-post] contains more 
+information.
+ 
+I was offered access to an early version of the Varnish module so I could test 
+it out and give feedback. So I can confirm that it does exactly what it says on 
+the tin. It looks up the device information in WURFL, so you can make Varnish 
+act on all the different capabilities of the device through standard VCL files.  
+The module will need to look up a device in WURFL the first time a new 
+User-Agent is encountered. Any subsequent visits by clients with the same 
+User-Agent string will fetch the capabilities from a built in cache so there is 
+virtually no impact on response time.
+
+Differently from [Enrises][enrise] solution previously discussed in 
+[Appendix A][appendix-a], ScientiaMobile's module will expose the full set of 
+WURFL capabilities and Varnish can be configured to act depending on their 
+values. Even for a use-case as simple as grouping your clients into three buckets 
+– desktop, tablet or mobile – using WURFL might make sense. Keeping track of 
+which clients are, and which are not, tablets is a mess and you need very 
+specific (and always changing) rules for identification.  This is where the 
+capabilities of WURFL is handy. With WURFL you can just refer to the 
+self-explanatory capability `is_tablet`. In other words, ScientiaMobile – 
+through their work on WURFL – have already done the hard work of classifying 
+devices on a large amount of different capabilities. The simplest of these are 
+the two boolean capabilities `is_wireless_device` and `is_tablet`. But you also 
+have more interesting capabilities like `pointing_method`, `https_support`, 
+`resolution_width` or `pdf_support`. So you can tailor your sites to phones that 
+uses a touch-screen if that is what they have. Or you can disallow login on 
+phones that doesn't support https. The possibilities are endless.
+
+So in short, if you want to serve different sites – or markup – to your clients
+depending on the capabilities of the device, this seems like a great way to go
+about achieving that goal.
+
 [wurfl]: http://wurfl.sourceforge.net/ "Wireless Universal Resource File"
 [varnish]: http://www.varnish-cache.org/ "Varnish Cache"
 [deviceatlas]: http://deviceatlas.com/ "DeviceAtlas"
@@ -325,6 +371,10 @@ could.
 [mobile-tools]: http://drupal.org/project/mobile_tools "Mobile Tools Project Page on Drupal.org"
 [hook_custom_theme]: http://api.drupal.org/api/drupal/modules--system--system.api.php/function/hook_custom_theme/7 "Drupal Documentation on hook_custom_theme"
 [appendix-a]: #appendix_a_varnish_and_wurfl "Appendix A: Varnish and WURFL"
+[appendix-b]: #appendix_b_varnish_and_wurfl_done_right "Appendix B: Varnish and WURFL Done Right"
 [davehall-twitter]: http://twitter.com/skwashd "Dave Halls Twitter profile"
 [enrise-blog-post]: http://www.enrise.com/2011/02/mobile-device-detection-with-wurfl-and-varnish/ "Mobile Device Detection with WURFL and Varnish – Enrise"
 [enrise]: http://www.enrise.com/ "Enrise"
+[scientiamobile-blog-post]: http://www.scientiamobile.com/blog/post/view/id/25/title/HTTP-and-Mobile%3A-The-Missing-Header- "HTTP and Mobile: The Missing Header"
+[scientiamobile]: http://www.scientiamobile.com "ScientiaMobile"
+[luca-passani-wikipedia]: http://en.wikipedia.org/wiki/Luca_Passani "Luca Passani on Wikipedia"
