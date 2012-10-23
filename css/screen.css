@@ -43,11 +43,13 @@ article {
 		article section.body h2 {
 			font-size: 21px; }
 
+		article section.body code {
+			font-size: 16px; }
+
 		article section.body pre {
 			overflow-x: auto;
 			background-color: #efefef;
 			padding: 5px 10px;
-			font-size: 16px;
 			-webkit-box-shadow: 2px 2px 10px rgba(0,0,0,0.7);
 			-moz-box-shadow: 2px 2px 10px rgba(0,0,0,0.7);
 			-o-box-shadow: 2px 2px 10px rgba(0,0,0,0.7);
