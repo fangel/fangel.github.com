@@ -1,0 +1,26 @@
+\documentclass[fleqn]{article}
+
+\begin{document}
+  
+\begin{equation}
+  P_{i,s} = \left | \begin{array}{ll} 
+    d - \sum\limits_{j=i}^{i+s} w_j + (s-1) \times 10
+  \end{array} \right |
+\end{equation}
+
+  
+\begin{equation}
+  C_{i,s} = \left \{ \begin{array}{ll}
+    min \left ( \begin{array}{ll}
+      C_{i,s+1} \\
+      P_{i,s} + C_{i+s, 1}
+    \end{array} \right ) &\mbox { if $i+s < n$ }\\
+    P_{i,s} &\mbox { otherwise }
+  \end{array} \right.
+\end{equation}
+
+\begin{equation}
+  S_{i,s} = \frac{d - (s-1) \times 10}{P_{i,s}}
+\end{equation}
+
+\end{document}
